@@ -15,7 +15,7 @@ const client = new MongoClient(uri ,{ useNewUrlParser: true, useUnifiedTopology:
 
 router.get('/', function(req, res){
   console.log("Home route activated");
-  res.json({message : "HI"});
+  res.json({message : "HOME"});
 });
 
 
@@ -63,18 +63,44 @@ router.get('/signup/:username/:password', async function(req, res){
 
 
 
+//to READ
+async function find(client, username, password){
+    const result = await client.db(db_name).collection(users_coll).findOne({
+      username : username,
+      password : password
+    });
+    if (result){
+    return 1;
+  }
+    else {
+      return 0;
+    }
+    console.log(`New listing created with the following id: ${result.insertedId}`);
+}
 
-
-//to test if verify works or not
-router.get('/login/:username/:password', function(req, res){
+//route to READ from mongodb and verify login
+router.get('/login/:username/:password', async function(req, res){
   console.log("Login Route activated");
   var username = req.params.username
   var password = req.params.password
-  if (username == "agrim" && password == "password")
-  res.json({status : "OK"});
-  else {
-    res.json({status: "NOT OK"});
+  try{
+  await client.connect();
+  console.log('Connected successfully');
+  var status  = await find(client, username, password)
+
+  if (status == 1){
+    res.json({login : "SUCCESSFULL"});
+
   }
+  else{
+    res.json({login: "UNSUCCESSFULL"});
+  }
+}
+catch (e){
+  console.error(e);
+  res.json({login : "error"});
+}
+
 });
 
 
