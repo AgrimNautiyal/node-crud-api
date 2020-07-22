@@ -24,8 +24,17 @@ router.get('/', function(req, res){
 //function to create a record
 async function createListing(client, newListing){
 
+    //first find if username exists in our collection or not. If not then CREATE shouldn't be allowed
+    var uname = newListing.username
+    const check1 = await client.db(db_name).collection(users_coll).findOne({username : uname});
+    if (check1){
+      return(-1);
+    }
+    else{
     const result = await client.db(db_name).collection(users_coll).insertOne(newListing);
     console.log(`New listing created with the following id: ${result.insertedId}`);
+    return(1);
+  }
 }
 //route to sign up and CREATE a record in the collection
 router.get('/signup/:username/:password', async function(req, res){
@@ -38,27 +47,23 @@ router.get('/signup/:username/:password', async function(req, res){
         username : username,
         password : password
     }
-
-
     try{
       await client.connect();
       console.log("client connected successfully");
-    await createListing(client, listing);
+    var r = await createListing(client, listing);
 
+    if (r==-1){
+      res.json({status : "duplicate record - failed"});
+    }
+    else{
     res.json({status : "INSERTED"});
   }
+}
   catch (e)
   {
     console.error(e);
     res.json({status : "INSERTION FAILED"});
   }
-  finally
-  {
-    await client.close();
-    res.json({status : "INSERTION TRIAL HAS ENDED"});
-  }
-});
-
 
 
 
