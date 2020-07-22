@@ -7,14 +7,19 @@ router.get('/', function(req, res){
     res.json({message : 'response'});
 });
 
-
+//to test if verify works or not
 router.get('/login/:username/:password', function(req, res){
   console.log("Login Route activated");
   var username = req.params.username
   var password = req.params.password
-
-  res.json({username : username,  password:password});
+  if (username == "agrim" && password == "password")
+  res.json({status : "OK"});
+  else {
+    res.json({status: "NOT OK"});
+  }
 });
+
+
 
 
 
